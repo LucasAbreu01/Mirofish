@@ -131,6 +131,7 @@ async def run_simulation(sim_id: str):
         finally:
             # Persist action log to DB BEFORE sending sentinel
             # (sentinel causes generator to exit, which may cancel this task).
+            # Save actions and status (critical - must not fail)
             try:
                 async with async_session_factory() as db:
                     async with db.begin():
@@ -141,12 +142,18 @@ async def run_simulation(sim_id: str):
                             )
                             sim.status = engine.status
                             logger.info("Saved %d actions for simulation %s", len(engine.get_actions()), sim_id)
-                        # Also update the graph in DB with new action nodes
+            except Exception as db_exc:
+                logger.error("Failed to save simulation actions: %s", db_exc)
+            # Save updated graph separately (non-critical)
+            try:
+                async with async_session_factory() as db:
+                    async with db.begin():
                         project = await db.get(Project, data["config"]["project_id"])
                         if project and graph:
                             project.graph_json = graph.to_json()
-            except Exception as db_exc:
-                logger.error("Failed to save simulation results: %s", db_exc)
+                            logger.info("Saved updated graph for project %s", data["config"]["project_id"])
+            except Exception as graph_exc:
+                logger.error("Failed to save graph update: %s", graph_exc)
             await queue.put(None)  # Sentinel to end the stream.
 
     async def event_generator():
