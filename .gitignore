@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.env
+*.db
+backend/uploads/*
+!backend/uploads/.gitkeep
+node_modules/
+frontend/dist/
+.vite/
+*.log
+.DS_Store
