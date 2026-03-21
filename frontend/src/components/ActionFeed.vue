@@ -22,12 +22,22 @@
       </div>
       <p class="action-content">{{ action.content }}</p>
       <p v-if="action.reasoning" class="action-reasoning">{{ action.reasoning }}</p>
+      <div v-if="action.memories_used && action.memories_used.length" class="memories-section">
+        <button class="memories-toggle" @click="toggleMemories(index)">
+          {{ expandedMemories[index] ? 'Hide' : 'Show' }} memories recalled ({{ action.memories_used.length }})
+        </button>
+        <ul v-if="expandedMemories[index]" class="memories-list">
+          <li v-for="(mem, mi) in action.memories_used" :key="mi" class="memory-item">
+            {{ mem }}
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue'
+import { ref, reactive, watch, nextTick } from 'vue'
 
 const props = defineProps({
   actions: {
@@ -37,6 +47,11 @@ const props = defineProps({
 })
 
 const feedContainer = ref(null)
+const expandedMemories = reactive({})
+
+function toggleMemories(index) {
+  expandedMemories[index] = !expandedMemories[index]
+}
 
 watch(
   () => props.actions.length,
@@ -197,5 +212,46 @@ function actionTypeClass(type) {
   margin-top: 6px;
   font-style: italic;
   line-height: 1.4;
+}
+
+.memories-section {
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+}
+
+.memories-toggle {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 2px 0;
+  transition: color 0.2s;
+}
+
+.memories-toggle:hover {
+  color: var(--accent);
+}
+
+.memories-list {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.memory-item {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.4;
+  padding: 4px 8px;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  border-left: 2px solid var(--accent);
 }
 </style>

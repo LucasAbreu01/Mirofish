@@ -1,6 +1,6 @@
 <template>
   <div class="setup-view">
-    <StepNav :currentStep="3" />
+    <StepNav :currentStep="3" :projectId="route.params.id" />
 
     <div class="setup-container">
       <h1 class="page-title">Simulation Setup</h1>

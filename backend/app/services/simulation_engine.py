@@ -111,7 +111,17 @@ class SimulationEngine:
                         agent.name,
                         self._format_action_as_memory(action),
                     )
-                    await self._emit({"type": "action", "action": action.model_dump()})
+                    event_data = action.model_dump()
+                    # Include recalled memories in the event for frontend display
+                    recent_feed_text = " ".join(
+                        item.get("content", "") for item in self.shared_feed[-5:]
+                    )
+                    recall_topic = f"{self.scenario} {recent_feed_text}"
+                    relevant_memories = self.memory.semantic_search(
+                        agent.name, recall_topic, top_k=3
+                    )
+                    event_data["memories_used"] = relevant_memories[:3] if relevant_memories else []
+                    await self._emit({"type": "action", "action": event_data})
 
                 await self._emit({"type": "round_end", "round": round_num})
 

@@ -1,6 +1,6 @@
 <template>
   <div class="report-view">
-    <StepNav :currentStep="5" />
+    <StepNav :currentStep="5" :projectId="projectState.projectId || ''" :simulationId="simId" />
 
     <div v-if="loading" class="loading-state">
       <div class="spinner" />
@@ -42,7 +42,7 @@ import StepNav from '../components/StepNav.vue'
 import ChatPanel from '../components/ChatPanel.vue'
 
 const route = useRoute()
-const { setReport } = useProject()
+const { state: projectState, setReport } = useProject()
 
 const simId = route.params.id
 const reportContent = ref('')

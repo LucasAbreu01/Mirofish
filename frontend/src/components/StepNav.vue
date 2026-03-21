@@ -7,8 +7,10 @@
       :class="{
         'step--completed': i + 1 < currentStep,
         'step--active': i + 1 === currentStep,
-        'step--future': i + 1 > currentStep
+        'step--future': i + 1 > currentStep,
+        'step--clickable': isClickable(i + 1)
       }"
+      @click="handleClick(i + 1)"
     >
       <span class="step-dot">
         <svg v-if="i + 1 < currentStep" class="step-check" viewBox="0 0 16 16" fill="currentColor">
@@ -23,15 +25,46 @@
 </template>
 
 <script setup>
-defineProps({
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const props = defineProps({
   currentStep: {
     type: Number,
     default: 1,
     validator: v => v >= 1 && v <= 5
+  },
+  projectId: {
+    type: String,
+    default: ''
+  },
+  simulationId: {
+    type: String,
+    default: ''
   }
 })
 
 const steps = ['Upload', 'Graph', 'Setup', 'Simulate', 'Report']
+
+function isClickable(stepNum) {
+  return stepNum < props.currentStep
+}
+
+function handleClick(stepNum) {
+  if (!isClickable(stepNum)) return
+
+  const routes = {
+    1: '/',
+    2: props.projectId ? `/graph/${props.projectId}` : null,
+    3: props.projectId ? `/setup/${props.projectId}` : null,
+    4: props.simulationId ? `/simulation/${props.simulationId}` : null,
+    5: props.simulationId ? `/report/${props.simulationId}` : null
+  }
+
+  const target = routes[stepNum]
+  if (target) router.push(target)
+}
 </script>
 
 <style scoped>
@@ -124,5 +157,18 @@ const steps = ['Upload', 'Graph', 'Setup', 'Simulate', 'Report']
 
 .step--future .step-connector {
   background: var(--border);
+}
+
+.step--clickable {
+  cursor: pointer;
+}
+
+.step--clickable:hover .step-dot {
+  filter: brightness(1.3);
+  transform: scale(1.1);
+}
+
+.step--clickable:hover .step-label {
+  text-decoration: underline;
 }
 </style>

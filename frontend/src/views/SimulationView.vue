@@ -1,7 +1,7 @@
 <template>
   <div class="simulation-view">
     <div class="sim-top-bar">
-      <StepNav :currentStep="4" />
+      <StepNav :currentStep="4" :projectId="projectId" :simulationId="simId" />
       <span class="status-badge" :class="statusClass">{{ statusLabel }}</span>
     </div>
 
@@ -39,6 +39,19 @@
           <p v-else class="muted">Waiting for activity...</p>
         </div>
 
+        <div v-if="projectId" class="stat-card">
+          <div class="graph-toggle-header">
+            <h3>Live Graph</h3>
+            <button class="btn-toggle" @click="toggleGraph">
+              {{ showGraph ? 'Hide Graph' : 'Show Live Graph' }}
+            </button>
+          </div>
+          <div v-if="showGraph" class="live-graph-container">
+            <GraphPanel v-if="graphData" :graph-data="graphData" />
+            <p v-else class="muted">Graph data will appear after the first round completes.</p>
+          </div>
+        </div>
+
         <div v-if="error" class="error-card">
           {{ error }}
         </div>
@@ -59,19 +72,26 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { startSimulationSSE, getActions, getSimulationStatus } from '../api/simulation'
+import { getProject } from '../api/graph'
+import { useProject } from '../store/project'
 import StepNav from '../components/StepNav.vue'
 import ActionFeed from '../components/ActionFeed.vue'
+import GraphPanel from '../components/GraphPanel.vue'
 
 const route = useRoute()
 const router = useRouter()
+const { state: projectState } = useProject()
 
 const simId = route.params.id
+const projectId = ref(projectState.projectId || '')
 const actions = ref([])
 const currentRound = ref(0)
 const totalRounds = ref(0)
 const status = ref('connecting')
 const error = ref('')
 const roundAgents = ref([])
+const showGraph = ref(false)
+const graphData = ref(null)
 
 let eventSource = null
 
@@ -116,6 +136,7 @@ function handleEvent(data) {
     }
 
     case 'round_end':
+      fetchGraphData()
       break
 
     case 'simulation_end':
@@ -139,10 +160,25 @@ function handleEvent(data) {
   }
 }
 
+async function fetchGraphData() {
+  if (!projectId.value || !showGraph.value) return
+  try {
+    const data = await getProject(projectId.value)
+    const graph = data.graph || (data.project && data.project.graph)
+    if (graph) graphData.value = graph
+  } catch (_) {
+    // silently ignore graph fetch errors
+  }
+}
+
 onMounted(async () => {
   try {
     // Check existing status first
     const statusData = await getSimulationStatus(simId)
+    // Extract projectId from status if available
+    if (statusData.project_id && !projectId.value) {
+      projectId.value = statusData.project_id
+    }
     if (statusData.status === 'completed') {
       status.value = 'completed'
       totalRounds.value = statusData.total_rounds || 0
@@ -170,6 +206,13 @@ onUnmounted(() => {
     eventSource = null
   }
 })
+
+function toggleGraph() {
+  showGraph.value = !showGraph.value
+  if (showGraph.value && !graphData.value) {
+    fetchGraphData()
+  }
+}
 
 function viewReport() {
   router.push(`/report/${simId}`)
@@ -352,5 +395,41 @@ function viewReport() {
 
 .btn-primary:hover {
   opacity: 0.9;
+}
+
+.graph-toggle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.graph-toggle-header h3 {
+  margin-bottom: 0;
+}
+
+.btn-toggle {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.btn-toggle:hover {
+  border-color: var(--accent);
+}
+
+.live-graph-container {
+  height: 300px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg);
 }
 </style>
