@@ -38,6 +38,7 @@ class SimulationConfig(BaseModel):
     num_rounds: int = 10
     agent_count: int = 5
     scenario: str = ""
+    agent_roles: str = ""
 
 
 class SimulationAction(BaseModel):

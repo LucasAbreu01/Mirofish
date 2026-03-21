@@ -39,7 +39,7 @@ async def create_simulation(
     graph = KnowledgeGraphManager.from_json(project.graph_json)
 
     scenario = config.scenario or project.scenario or ""
-    agents = await generate_agents(graph, config.agent_count, scenario)
+    agents = await generate_agents(graph, config.agent_count, scenario, config.agent_roles)
 
     sim_id = str(uuid.uuid4())
     sim = Simulation(

@@ -50,6 +50,18 @@
           />
         </div>
 
+        <div class="form-group">
+          <label>Agent Roles <span class="optional-tag">(optional)</span></label>
+          <textarea
+            v-model="config.agentRoles"
+            rows="3"
+            placeholder="e.g. 2 clinical psychologists, 1 neuropsychologist, 1 psychiatrist, 1 social worker"
+          />
+          <p class="field-hint">
+            Define who should participate. Leave empty to auto-generate from document entities.
+          </p>
+        </div>
+
         <button class="btn-primary" @click="generateAgents" :disabled="!config.scenario.trim()">
           Generate Agents
         </button>
@@ -111,7 +123,8 @@ const simulationId = ref(null)
 const config = ref({
   numAgents: 5,
   numRounds: 10,
-  scenario: ''
+  scenario: '',
+  agentRoles: ''
 })
 
 onMounted(async () => {
@@ -143,9 +156,10 @@ async function generateAgents() {
     const projectId = route.params.id
     const result = await createSimulation({
       project_id: projectId,
-      num_agents: config.value.numAgents,
+      agent_count: config.value.numAgents,
       num_rounds: config.value.numRounds,
-      scenario: config.value.scenario
+      scenario: config.value.scenario,
+      agent_roles: config.value.agentRoles
     })
 
     simulationId.value = result.simulation_id || result.id
@@ -285,6 +299,19 @@ function startSimulation() {
 
 .form-group textarea::placeholder {
   color: var(--text-muted);
+}
+
+.optional-tag {
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.field-hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
 }
 
 .btn-primary {
