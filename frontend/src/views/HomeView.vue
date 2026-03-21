@@ -75,13 +75,49 @@
 
       <p v-if="loading" class="loading-text">Uploading &amp; extracting knowledge graph&hellip;</p>
     </div>
+
+    <div v-if="history.length" class="history-section">
+      <div class="history-separator"></div>
+      <h2 class="history-heading">Previous Simulations</h2>
+      <div class="history-grid">
+        <div
+          v-for="project in history"
+          :key="project.project_id || project.id"
+          class="history-card"
+          @click="goToProject(project)"
+        >
+          <button
+            class="history-delete"
+            title="Delete project"
+            @click.stop="removeProject(project)"
+          >&times;</button>
+          <div class="history-card-name">{{ project.name || project.project_name || 'Untitled' }}</div>
+          <p class="history-card-scenario">{{ truncate(project.scenario, 100) }}</p>
+          <div class="history-card-meta">
+            <span v-if="project.entity_count != null" class="badge badge--accent">{{ project.entity_count }} entities</span>
+            <span class="badge badge--muted">{{ (project.simulations || []).length }} sim{{ (project.simulations || []).length === 1 ? '' : 's' }}</span>
+          </div>
+          <div v-if="(project.simulations || []).length" class="history-sims">
+            <div v-for="(sim, si) in project.simulations" :key="si" class="history-sim-row">
+              <span
+                class="badge"
+                :class="sim.status === 'completed' ? 'badge--success' : sim.status === 'failed' ? 'badge--error' : 'badge--muted'"
+              >{{ sim.status || 'unknown' }}</span>
+              <span class="history-sim-detail">{{ sim.action_count ?? 0 }} actions</span>
+              <span v-if="sim.has_report" class="badge badge--accent">report</span>
+            </div>
+          </div>
+          <div class="history-card-date">{{ formatDate(project.created_at) }}</div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { uploadDocuments } from '../api/graph'
+import { uploadDocuments, getHistory, deleteProject } from '../api/graph'
 import { useProject } from '../store/project'
 
 const router = useRouter()
@@ -94,6 +130,7 @@ const projectName = ref('')
 const loading = ref(false)
 const error = ref('')
 const isDragging = ref(false)
+const history = ref([])
 
 function openFilePicker() {
   fileInput.value?.click()
@@ -150,6 +187,54 @@ async function startEngine() {
     loading.value = false
   }
 }
+
+async function loadHistory() {
+  try {
+    const data = await getHistory()
+    history.value = Array.isArray(data) ? data : data.projects || []
+  } catch {
+    // silently ignore – history is non-critical
+  }
+}
+
+function truncate(text, max) {
+  if (!text) return ''
+  return text.length > max ? text.slice(0, max) + '...' : text
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
+function goToProject(project) {
+  const pid = project.project_id || project.id
+  const sims = project.simulations || []
+  const withReport = sims.filter(s => s.has_report)
+  if (withReport.length) {
+    const latest = withReport[withReport.length - 1]
+    router.push(`/report/${pid}/${latest.simulation_id || latest.id}`)
+  } else {
+    router.push(`/graph/${pid}`)
+  }
+}
+
+async function removeProject(project) {
+  const pid = project.project_id || project.id
+  const name = project.name || project.project_name || 'this project'
+  if (!window.confirm(`Delete "${name}"? This cannot be undone.`)) return
+  try {
+    await deleteProject(pid)
+    history.value = history.value.filter(p => (p.project_id || p.id) !== pid)
+  } catch {
+    // ignore
+  }
+}
+
+onMounted(() => {
+  loadHistory()
+})
 </script>
 
 <style scoped>
@@ -391,5 +476,148 @@ async function startEngine() {
   color: var(--error);
   font-size: 0.8rem;
   margin: 0;
+}
+
+/* History section */
+.history-section {
+  width: 100%;
+  max-width: 720px;
+  margin-top: 48px;
+}
+
+.history-separator {
+  height: 1px;
+  background: var(--border);
+  margin-bottom: 24px;
+}
+
+.history-heading {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  margin: 0 0 20px;
+}
+
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.history-card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.1s;
+}
+
+.history-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.history-delete {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--error);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: inherit;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.history-card:hover .history-delete {
+  opacity: 1;
+}
+
+.history-delete:hover {
+  background: rgba(248, 81, 73, 0.15);
+}
+
+.history-card-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
+  margin-bottom: 6px;
+  padding-right: 24px;
+}
+
+.history-card-scenario {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0 0 10px;
+  line-height: 1.45;
+}
+
+.history-card-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.badge--accent {
+  background: rgba(255, 107, 53, 0.15);
+  color: var(--accent);
+}
+
+.badge--muted {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+}
+
+.badge--success {
+  background: rgba(63, 185, 80, 0.15);
+  color: var(--success);
+}
+
+.badge--error {
+  background: rgba(248, 81, 73, 0.15);
+  color: var(--error);
+}
+
+.history-sims {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.history-sim-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+}
+
+.history-sim-detail {
+  color: var(--text-muted);
+}
+
+.history-card-date {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+  margin-top: 4px;
 }
 </style>
