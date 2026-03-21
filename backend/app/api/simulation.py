@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sse_starlette.sse import EventSourceResponse
 
-from app.models.database import get_session, Project, Simulation
+from app.models.database import get_session, async_session_factory, Project, Simulation
 from app.models.schemas import AgentProfile, SimulationConfig
 from app.services.agent_generator import generate_agents
 from app.services.knowledge_graph import KnowledgeGraphManager
@@ -96,10 +96,7 @@ async def update_agent(
 
 
 @router.get("/{sim_id}/run")
-async def run_simulation(
-    sim_id: str,
-    session: AsyncSession = Depends(get_session),
-):
+async def run_simulation(sim_id: str):
     """Start a simulation and stream events via SSE."""
     data = simulation_data.get(sim_id)
     if not data:
@@ -131,18 +128,21 @@ async def run_simulation(
         except Exception as exc:
             logger.error("Simulation %s failed: %s", sim_id, exc)
         finally:
-            await queue.put(None)  # Sentinel to end the stream.
-            # Persist action log to DB.
+            # Persist action log to DB BEFORE sending sentinel
+            # (sentinel causes generator to exit, which may cancel this task).
             try:
-                async with session.begin():
-                    sim = await session.get(Simulation, sim_id)
-                    if sim:
-                        sim.action_log_json = json.dumps(
-                            [a.model_dump() for a in engine.get_actions()]
-                        )
-                        sim.status = engine.status
+                async with async_session_factory() as db:
+                    async with db.begin():
+                        sim = await db.get(Simulation, sim_id)
+                        if sim:
+                            sim.action_log_json = json.dumps(
+                                [a.model_dump() for a in engine.get_actions()]
+                            )
+                            sim.status = engine.status
+                            logger.info("Saved %d actions for simulation %s", len(engine.get_actions()), sim_id)
             except Exception as db_exc:
                 logger.error("Failed to save simulation results: %s", db_exc)
+            await queue.put(None)  # Sentinel to end the stream.
 
     async def event_generator():
         task = asyncio.create_task(run_in_background())
