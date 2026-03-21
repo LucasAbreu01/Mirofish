@@ -162,6 +162,58 @@ class KnowledgeGraphManager:
 
         return "\n".join(lines)
 
+    def add_action_node(self, action_id: str, agent_name: str, action_type: str, content: str, round_num: int, target: str | None = None):
+        """Add a simulation action as a node in the graph."""
+        self.graph.add_node(
+            action_id,
+            entity_type="action",
+            description=content[:200],
+            attributes={
+                "agent": agent_name,
+                "action_type": action_type,
+                "round": round_num,
+                "full_content": content,
+            },
+        )
+        # Link action to its agent
+        if agent_name in self.graph:
+            self.graph.add_edge(agent_name, action_id, relation_type="performed", description=f"Round {round_num}: {action_type}")
+
+        # Link reply to target message
+        if target and target in self.graph:
+            self.graph.add_edge(action_id, target, relation_type="replies_to", description="Reply")
+
+    def add_interaction_edge(self, source_agent: str, target_agent: str, interaction_type: str, round_num: int):
+        """Add or strengthen an interaction edge between agents."""
+        if self.graph.has_edge(source_agent, target_agent):
+            # Strengthen existing edge
+            edge_data = self.graph[source_agent][target_agent]
+            count = edge_data.get("interaction_count", 0) + 1
+            self.graph[source_agent][target_agent]["interaction_count"] = count
+            self.graph[source_agent][target_agent]["description"] = f"{count} interactions ({interaction_type} in round {round_num})"
+        else:
+            if source_agent in self.graph and target_agent in self.graph:
+                self.graph.add_edge(
+                    source_agent, target_agent,
+                    relation_type="interacts_with",
+                    description=f"{interaction_type} in round {round_num}",
+                    interaction_count=1,
+                )
+
+    def get_agent_action_history(self, agent_name: str) -> list[dict]:
+        """Get all action nodes performed by an agent."""
+        actions = []
+        for neighbor in self.graph.neighbors(agent_name):
+            node_data = self.graph.nodes[neighbor]
+            if node_data.get("entity_type") == "action":
+                actions.append({
+                    "id": neighbor,
+                    "content": node_data.get("description", ""),
+                    "round": node_data.get("attributes", {}).get("round", 0),
+                    "action_type": node_data.get("attributes", {}).get("action_type", ""),
+                })
+        return sorted(actions, key=lambda x: x.get("round", 0))
+
     def get_agent_candidates(self, count: int) -> list[str]:
         """Return the top *count* entity names most suitable for becoming
         simulation agents.

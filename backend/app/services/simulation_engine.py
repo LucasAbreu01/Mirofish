@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from typing import Any, Callable
 
 from app.models.schemas import AgentProfile, SimulationAction, SimulationState
+from app.services.knowledge_graph import KnowledgeGraphManager
 from app.services.memory_manager import MemoryManager
 from app.utils.llm_client import llm_client
 from app.utils.logger import get_logger
@@ -28,10 +29,12 @@ class SimulationEngine:
         agents: list[AgentProfile],
         scenario: str,
         graph_context: str = "",
+        graph_manager: KnowledgeGraphManager | None = None,
     ) -> None:
         self.agents = agents
         self.scenario = scenario
         self.graph_context = graph_context
+        self.graph_manager = graph_manager
         self.memory = MemoryManager()
         self.action_log: list[SimulationAction] = []
         self.shared_feed: list[dict[str, Any]] = []
@@ -80,6 +83,29 @@ class SimulationEngine:
                             "target": action.target_message_id,
                         }
                         self.shared_feed.append(feed_entry)
+
+                        # Update knowledge graph with action node
+                        if self.graph_manager:
+                            action_id = feed_entry["id"]
+                            self.graph_manager.add_action_node(
+                                action_id=action_id,
+                                agent_name=action.agent_name,
+                                action_type=action.action_type,
+                                content=action.content,
+                                round_num=round_num,
+                                target=action.target_message_id,
+                            )
+                            if action.action_type == "REPLY" and action.target_message_id:
+                                # Find the target message's agent
+                                for entry in self.shared_feed:
+                                    if entry["id"] == action.target_message_id:
+                                        self.graph_manager.add_interaction_edge(
+                                            source_agent=action.agent_name,
+                                            target_agent=entry["agent"],
+                                            interaction_type="REPLY",
+                                            round_num=round_num,
+                                        )
+                                        break
 
                     self.memory.add_event(
                         agent.name,
@@ -182,7 +208,10 @@ class SimulationEngine:
         round_num: int,
         total_rounds: int,
     ) -> str:
-        memory_ctx = self.memory.get_context(agent.name)
+        # Use semantic search to get memories most relevant to the current discussion
+        recent_feed_text = " ".join(item.get("content", "") for item in self.shared_feed[-5:])
+        topic = f"{self.scenario} {recent_feed_text}"
+        memory_ctx = self.memory.get_relevant_context(agent.name, topic)
         recent_feed = self.shared_feed[-10:]
         feed_lines = []
         for item in recent_feed:

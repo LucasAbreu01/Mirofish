@@ -112,6 +112,7 @@ async def run_simulation(sim_id: str):
         agents=agents,
         scenario=scenario,
         graph_context=json.dumps(graph.to_dict()),
+        graph_manager=graph,
     )
     active_simulations[sim_id] = engine
 
@@ -140,6 +141,10 @@ async def run_simulation(sim_id: str):
                             )
                             sim.status = engine.status
                             logger.info("Saved %d actions for simulation %s", len(engine.get_actions()), sim_id)
+                        # Also update the graph in DB with new action nodes
+                        project = await db.get(Project, data["config"]["project_id"])
+                        if project and graph:
+                            project.graph_json = graph.to_json()
             except Exception as db_exc:
                 logger.error("Failed to save simulation results: %s", db_exc)
             await queue.put(None)  # Sentinel to end the stream.
