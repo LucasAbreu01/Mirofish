@@ -1,0 +1,3 @@
+output/
+backend/data/
+backend/.pytest_cache/

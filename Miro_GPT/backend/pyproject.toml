@@ -1,0 +1,29 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Mini MiroFish backend"
+readme = "README.md"
+authors = [{ name = "Lucas" }]
+requires-python = ">=3.11"
+dependencies = [
+    "flask>=3.1.0",
+    "flask-cors>=6.0.0",
+    "openai>=2.0.0",
+    "pydantic>=2.11.0",
+    "pymupdf>=1.26.0",
+    "python-dotenv>=1.1.0",
+    "sqlalchemy>=2.0.40",
+    "zep-cloud>=3.18.0,<3.19.0",
+]
+
+[project.scripts]
+backend = "backend:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.7,<0.10.0"]
+build-backend = "uv_build"
