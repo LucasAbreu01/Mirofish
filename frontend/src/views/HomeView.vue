@@ -286,7 +286,6 @@ onMounted(() => {
   min-height: 100vh;
   background: var(--bg);
   color: var(--text);
-  font-family: 'JetBrains Mono', monospace;
   display: flex;
   flex-direction: column;
 }
@@ -336,11 +335,11 @@ onMounted(() => {
 
 .panel-create {
   flex: 0 0 55%;
-  padding: 48px 40px 40px;
+  padding: 60px 48px 40px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
 .panel-feed {
@@ -357,36 +356,38 @@ onMounted(() => {
 }
 
 .welcome-title {
-  font-size: 2.2rem;
-  font-weight: 700;
+  font-size: 2.4rem;
+  font-weight: 800;
   color: var(--text);
   margin: 0;
   line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .welcome-sub {
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   color: var(--text-muted);
-  margin: 6px 0 0;
+  margin: 8px 0 0;
 }
 
 /* Dropzone */
 .dropzone {
-  border: 1.5px dashed var(--border);
-  border-radius: 10px;
-  padding: 20px 16px;
+  border: 1.5px dashed rgba(48, 54, 61, 0.8);
+  border-radius: 12px;
+  padding: 24px 20px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
-  background: var(--bg-secondary);
+  transition: all 0.25s ease;
+  background: rgba(22, 27, 34, 0.4);
 }
 
 .dropzone:hover,
 .dropzone--active {
   border-color: var(--accent);
-  background: rgba(255, 107, 53, 0.04);
+  background: rgba(255, 107, 53, 0.05);
+  box-shadow: 0 0 0 1px rgba(255, 107, 53, 0.1) inset;
 }
 
 .dropzone-icon {
@@ -460,23 +461,24 @@ onMounted(() => {
 /* Scenario input */
 .scenario-input-wrapper {
   position: relative;
-  background: var(--bg-secondary);
-  border: 1.5px solid var(--border);
+  background: rgba(22, 27, 34, 0.6);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  transition: border-color 0.2s;
+  transition: all 0.25s ease;
 }
 
 .scenario-input-wrapper:focus-within {
   border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 4px 12px rgba(255, 107, 53, 0.08);
 }
 
 .scenario-input {
   width: 100%;
   background: transparent;
   border: none;
-  padding: 14px 50px 14px 16px;
+  padding: 16px 50px 16px 16px;
   color: var(--text);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.85rem;
   resize: none;
   outline: none;
@@ -527,19 +529,20 @@ onMounted(() => {
 
 .input-project-name {
   flex: 1;
-  background: var(--bg-secondary);
+  background: rgba(22, 27, 34, 0.6);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 10px 14px;
+  padding: 12px 16px;
   color: var(--text);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.8rem;
-  transition: border-color 0.2s;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  transition: all 0.2s;
 }
 
 .input-project-name:focus {
   outline: none;
   border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
 }
 
 /* Action buttons */
@@ -552,14 +555,14 @@ onMounted(() => {
 .btn-action {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 18px;
-  background: var(--bg-card);
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(28, 33, 40, 0.5);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 8px;
   color: var(--text-muted);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -646,17 +649,19 @@ onMounted(() => {
 }
 
 .feed-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  background: rgba(28, 33, 40, 0.4);
+  border: 1px solid rgba(48, 54, 61, 0.6);
   border-radius: 10px;
-  padding: 14px 16px;
+  padding: 16px;
   cursor: pointer;
-  transition: border-color 0.2s, transform 0.1s;
+  transition: all 0.2s ease;
 }
 
 .feed-card:hover {
-  border-color: var(--accent);
-  transform: translateY(-1px);
+  border-color: rgba(255, 107, 53, 0.6);
+  background: rgba(28, 33, 40, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .feed-card-header {
@@ -737,13 +742,14 @@ onMounted(() => {
 }
 
 .feed-sim-bar {
-  width: 24px;
-  height: 4px;
-  border-radius: 2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
 }
 
 .bar--success {
   background: var(--success);
+  box-shadow: 0 0 4px var(--success);
 }
 
 .bar--muted {

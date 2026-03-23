@@ -13,6 +13,8 @@
   --border: #30363d;
   --success: #3fb950;
   --error: #f85149;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
 }
 
 *,
@@ -24,8 +26,9 @@
 }
 
 body {
-  background-color: #0d1117;
-  color: #e6edf3;
-  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 </style>

@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(done)",
+      "Bash(git commit:*)",
+      "Bash(1 psychiatrist\"\\) so the LLM creates matching participants who discuss the:*)",
+      "Bash(gh auth:*)",
+      "Bash(winget install:*)",
+      "Bash(powershell.exe -Command \"winget install GitHub.cli --accept-package-agreements --accept-source-agreements\")",
+      "Bash(powershell.exe -Command \"Get-Command winget -ErrorAction SilentlyContinue; [Environment]::GetEnvironmentVariable\\(''LOCALAPPDATA''\\); ls ''C:/Program Files/GitHub CLI/'' 2>$null; ls ''C:/Users/Lucas/AppData/Local/Microsoft/WindowsApps/winget.exe'' 2>$null\")",
+      "Bash(curl -sL -o /tmp/gh_cli.msi \"https://github.com/cli/cli/releases/download/v2.65.0/gh_2.65.0_windows_amd64.msi\")",
+      "Read(//tmp/**)",
+      "Bash(powershell.exe -Command \"Start-Process msiexec.exe -ArgumentList ''/i'',''C:\\\\Users\\\\Lucas\\\\AppData\\\\Local\\\\Temp\\\\gh_cli.msi'',''/quiet'',''/norestart'' -Wait -Verb RunAs\")",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" --version)",
+      "Bash(\"/c/Program Files \\(x86\\)/GitHub CLI/gh.exe\" --version)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" auth login --with-token)",
+      "Bash(curl -s http://localhost:8000/api/health)"
+    ]
+  }
+}

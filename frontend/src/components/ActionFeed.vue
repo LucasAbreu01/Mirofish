@@ -119,15 +119,18 @@ function actionTypeClass(type) {
 }
 
 .action-item {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px;
-  transition: border-color 0.2s;
+  background: rgba(22, 27, 34, 0.4);
+  border: 1px solid rgba(48, 54, 61, 0.6);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.25s ease;
 }
 
 .action-item:hover {
-  border-color: #484f58;
+  border-color: rgba(255, 107, 53, 0.4);
+  background: rgba(28, 33, 40, 0.6);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .action-header {
@@ -138,13 +141,14 @@ function actionTypeClass(type) {
 }
 
 .round-badge {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
+  background: rgba(48, 54, 61, 0.4);
+  border: 1px solid rgba(48, 54, 61, 0.8);
   color: var(--text-muted);
   font-size: 11px;
-  font-weight: 600;
-  padding: 1px 6px;
-  border-radius: 4px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
 }
 
 .agent-name {
@@ -155,11 +159,13 @@ function actionTypeClass(type) {
 .action-type {
   font-size: 10px;
   font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-left: auto;
+  border: 1px solid currentColor;
+  background: transparent !important;
 }
 
 .type-post {
@@ -201,9 +207,10 @@ function actionTypeClass(type) {
 }
 
 .action-content {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text);
-  line-height: 1.5;
+  line-height: 1.6;
+  font-family: var(--font-sans);
 }
 
 .action-reasoning {

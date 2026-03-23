@@ -108,16 +108,18 @@ function saveEdit() {
 
 <style scoped>
 .agent-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  background: rgba(28, 33, 40, 0.4);
+  border: 1px solid rgba(48, 54, 61, 0.6);
   border-radius: 12px;
   padding: 16px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .agent-card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px rgba(255, 107, 53, 0.1);
+  border-color: rgba(255, 107, 53, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 .agent-card.editing {
@@ -151,11 +153,12 @@ function saveEdit() {
 
 .agent-name {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-family: var(--font-sans);
 }
 
 .agent-profession {
@@ -164,13 +167,15 @@ function saveEdit() {
 }
 
 .type-badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   white-space: nowrap;
+  border: 1px solid currentColor;
+  background: transparent !important;
 }
 
 .field {
