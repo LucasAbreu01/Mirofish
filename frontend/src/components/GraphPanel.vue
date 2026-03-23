@@ -28,32 +28,29 @@ const TYPE_COLORS = {
   Organization: '#3fb950',
   Location: '#58a6ff',
   Event: '#d2a8ff',
-  Concept: '#f0883e'
+  Concept: '#f0883e',
+  Unknown: '#8b949e'
 }
 const DEFAULT_COLOR = '#8b949e'
 
 function getColor(type) {
   if (!type) return DEFAULT_COLOR
-  // Normalize: "person" -> "Person", "company" -> "Organization", etc.
   const typeMap = {
-    person: 'Person',
-    human: 'Person',
-    people: 'Person',
-    organization: 'Organization',
-    company: 'Organization',
-    org: 'Organization',
-    government: 'Organization',
-    ngo: 'Organization',
-    location: 'Location',
-    place: 'Location',
-    city: 'Location',
-    country: 'Location',
-    event: 'Event',
-    concept: 'Concept',
-    idea: 'Concept',
-    product: 'Concept',
-    technology: 'Concept',
-    ai_platform: 'Concept',
+    person: 'Person', human: 'Person', people: 'Person',
+    personagem: 'Person', autor: 'Person', escritor: 'Person',
+    jogador: 'Person', técnico: 'Person', psicólogo: 'Person',
+    sócio: 'Person', advogado: 'Person', ceo: 'Person',
+    organization: 'Organization', company: 'Organization', org: 'Organization',
+    government: 'Organization', ngo: 'Organization',
+    instituição: 'Organization', empresa: 'Organization', escritório: 'Organization',
+    clube: 'Organization', time: 'Organization', entidade: 'Organization',
+    location: 'Location', place: 'Location', city: 'Location', country: 'Location',
+    local: 'Location', cidade: 'Location',
+    event: 'Event', evento: 'Event',
+    concept: 'Concept', idea: 'Concept', product: 'Concept', technology: 'Concept',
+    ai_platform: 'Concept', obra: 'Concept', conceito: 'Concept',
+    política: 'Concept', lei: 'Concept', regulação: 'Concept',
+    sentimento: 'Event', tema: 'Concept',
   }
   const normalized = typeMap[type.toLowerCase()] || type.charAt(0).toUpperCase() + type.slice(1).toLowerCase()
   return TYPE_COLORS[normalized] || DEFAULT_COLOR
@@ -75,18 +72,43 @@ function render() {
 
   svg.attr('width', width).attr('height', height)
 
+  const defs = svg.append('defs')
+
+  // Glow filter
+  const filter = defs.append('filter').attr('id', 'glow')
+  filter.append('feGaussianBlur').attr('stdDeviation', '3').attr('result', 'blur')
+  filter.append('feComposite').attr('in', 'SourceGraphic').attr('in2', 'blur').attr('operator', 'over')
+
+  // Hover glow filter (stronger)
+  const hoverFilter = defs.append('filter').attr('id', 'glow-hover')
+  hoverFilter.append('feGaussianBlur').attr('stdDeviation', '6').attr('result', 'blur')
+  hoverFilter.append('feComposite').attr('in', 'SourceGraphic').attr('in2', 'blur').attr('operator', 'over')
+
   // Arrow marker
-  svg.append('defs').append('marker')
+  defs.append('marker')
     .attr('id', 'arrowhead')
     .attr('viewBox', '0 -5 10 10')
-    .attr('refX', 28)
+    .attr('refX', 24)
     .attr('refY', 0)
-    .attr('markerWidth', 6)
-    .attr('markerHeight', 6)
+    .attr('markerWidth', 5)
+    .attr('markerHeight', 5)
     .attr('orient', 'auto')
     .append('path')
-    .attr('d', 'M0,-5L10,0L0,5')
-    .attr('fill', '#484f58')
+    .attr('d', 'M0,-4L8,0L0,4')
+    .attr('fill', '#3d444d')
+
+  // Gradient for links
+  defs.append('linearGradient')
+    .attr('id', 'link-gradient')
+    .attr('gradientUnits', 'userSpaceOnUse')
+    .selectAll('stop')
+    .data([
+      { offset: '0%', color: 'rgba(88, 166, 255, 0.3)' },
+      { offset: '100%', color: 'rgba(88, 166, 255, 0.08)' }
+    ])
+    .join('stop')
+    .attr('offset', d => d.offset)
+    .attr('stop-color', d => d.color)
 
   // Zoom group
   const g = svg.append('g')
@@ -104,8 +126,9 @@ function render() {
     .selectAll('line')
     .data(edges)
     .join('line')
-    .attr('stroke', '#484f58')
+    .attr('stroke', '#2d333b')
     .attr('stroke-width', 1.5)
+    .attr('stroke-opacity', 0.6)
     .attr('marker-end', 'url(#arrowhead)')
 
   // Edge labels
@@ -114,8 +137,8 @@ function render() {
     .data(edges)
     .join('text')
     .text(d => d.relation_type || '')
-    .attr('font-size', '9px')
-    .attr('fill', '#6e7681')
+    .attr('font-size', '8px')
+    .attr('fill', '#484f58')
     .attr('text-anchor', 'middle')
     .attr('font-family', "'JetBrains Mono', monospace")
     .style('pointer-events', 'none')
@@ -126,27 +149,92 @@ function render() {
     .data(nodes)
     .join('g')
     .style('cursor', 'pointer')
-    .on('click', (event, d) => {
-      event.stopPropagation()
-      emit('node-click', d)
-    })
 
-  // Circles
+  // Outer glow ring
   node.append('circle')
-    .attr('r', 16)
-    .attr('fill', d => getColor(d.entity_type))
-    .attr('stroke', d => d3.color(getColor(d.entity_type)).brighter(0.6))
+    .attr('r', 20)
+    .attr('fill', 'none')
+    .attr('stroke', d => getColor(d.entity_type))
+    .attr('stroke-width', 1)
+    .attr('stroke-opacity', 0.2)
+    .attr('filter', 'url(#glow)')
+
+  // Main circle
+  node.append('circle')
+    .attr('r', 14)
+    .attr('fill', d => {
+      const c = d3.color(getColor(d.entity_type))
+      c.opacity = 0.15
+      return c + ''
+    })
+    .attr('stroke', d => getColor(d.entity_type))
     .attr('stroke-width', 2)
+    .attr('class', 'node-circle')
+
+  // Inner dot
+  node.append('circle')
+    .attr('r', 4)
+    .attr('fill', d => getColor(d.entity_type))
 
   // Node labels
   node.append('text')
     .text(d => d.name || d.entity_name || d.id || '')
-    .attr('dy', 30)
+    .attr('dy', 28)
     .attr('text-anchor', 'middle')
-    .attr('fill', '#e6edf3')
+    .attr('fill', '#adbac7')
     .attr('font-size', '10px')
+    .attr('font-weight', '500')
     .attr('font-family', "'JetBrains Mono', monospace")
     .style('pointer-events', 'none')
+    .style('text-shadow', '0 1px 4px rgba(0,0,0,0.8)')
+
+  // Hover effects
+  node
+    .on('mouseenter', function(event, d) {
+      d3.select(this).select('.node-circle')
+        .transition().duration(200)
+        .attr('r', 18)
+        .attr('stroke-width', 3)
+        .attr('fill', () => {
+          const c = d3.color(getColor(d.entity_type))
+          c.opacity = 0.3
+          return c + ''
+        })
+      d3.select(this).select('text')
+        .transition().duration(200)
+        .attr('fill', '#e6edf3')
+        .attr('font-size', '11px')
+      // Highlight connected links
+      link.attr('stroke', l =>
+        (l.source === d || l.target === d) ? getColor(d.entity_type) : '#2d333b'
+      ).attr('stroke-opacity', l =>
+        (l.source === d || l.target === d) ? 0.8 : 0.3
+      ).attr('stroke-width', l =>
+        (l.source === d || l.target === d) ? 2.5 : 1.5
+      )
+    })
+    .on('mouseleave', function(event, d) {
+      d3.select(this).select('.node-circle')
+        .transition().duration(300)
+        .attr('r', 14)
+        .attr('stroke-width', 2)
+        .attr('fill', () => {
+          const c = d3.color(getColor(d.entity_type))
+          c.opacity = 0.15
+          return c + ''
+        })
+      d3.select(this).select('text')
+        .transition().duration(300)
+        .attr('fill', '#adbac7')
+        .attr('font-size', '10px')
+      link.attr('stroke', '#2d333b')
+        .attr('stroke-opacity', 0.6)
+        .attr('stroke-width', 1.5)
+    })
+    .on('click', (event, d) => {
+      event.stopPropagation()
+      emit('node-click', d)
+    })
 
   // Drag behavior
   const drag = d3.drag()
@@ -171,11 +259,13 @@ function render() {
   simulation = d3.forceSimulation(nodes)
     .force('link', d3.forceLink(edges)
       .id(d => d.id)
-      .distance(150)
+      .distance(120)
     )
-    .force('charge', d3.forceManyBody().strength(-400))
-    .force('collide', d3.forceCollide().radius(40))
+    .force('charge', d3.forceManyBody().strength(-350))
+    .force('collide', d3.forceCollide().radius(35))
     .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('x', d3.forceX(width / 2).strength(0.05))
+    .force('y', d3.forceY(height / 2).strength(0.05))
     .on('tick', () => {
       link
         .attr('x1', d => d.source.x)
@@ -232,7 +322,7 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: var(--bg);
+  background: radial-gradient(ellipse at center, #131920 0%, #0d1117 70%);
   border-radius: 8px;
 }
 

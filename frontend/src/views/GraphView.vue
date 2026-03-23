@@ -105,12 +105,6 @@ function goToSetup() {
 onMounted(async () => {
   const id = route.params.id
 
-  // If we already have graph data in the store, use it
-  if (projectState.graph && projectState.projectId === id) {
-    graphData.value = projectState.graph
-    return
-  }
-
   try {
     const data = await getProject(id)
     const project = data.project || data

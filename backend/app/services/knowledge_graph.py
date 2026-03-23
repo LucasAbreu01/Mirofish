@@ -66,7 +66,7 @@ class KnowledgeGraphManager:
         for name, data in self.graph.nodes(data=True):
             nodes.append({
                 "id": name,
-                "type": data.get("entity_type", "Unknown"),
+                "entity_type": data.get("entity_type", "Unknown"),
                 "description": data.get("description", ""),
                 "attributes": data.get("attributes", {}),
             })
@@ -75,7 +75,7 @@ class KnowledgeGraphManager:
             edges.append({
                 "source": source,
                 "target": target,
-                "type": data.get("relation_type", ""),
+                "relation_type": data.get("relation_type", ""),
                 "description": data.get("description", ""),
             })
         return {"nodes": nodes, "edges": edges}
