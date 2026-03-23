@@ -1,6 +1,6 @@
 <template>
   <div class="report-view">
-    <StepNav :currentStep="5" :projectId="projectState.projectId || ''" :simulationId="simId" />
+    <StepNav :currentStep="5" :projectId="resolvedProjectId" :simulationId="simId" />
 
     <div v-if="loading" class="loading-state">
       <div class="spinner" />
@@ -49,6 +49,7 @@ const reportContent = ref('')
 const loading = ref(true)
 const loadingMessage = ref('Checking for existing report...')
 const error = ref('')
+const resolvedProjectId = ref(projectState.projectId || '')
 
 const renderedReport = computed(() => {
   if (!reportContent.value) return ''
@@ -61,6 +62,9 @@ onMounted(async () => {
     if (data.report || data.content || data.markdown) {
       reportContent.value = data.report || data.content || data.markdown
       setReport(reportContent.value)
+    }
+    if (data.project_id && !resolvedProjectId.value) {
+      resolvedProjectId.value = data.project_id
     }
   } catch (err) {
     // No report exists yet, that's fine

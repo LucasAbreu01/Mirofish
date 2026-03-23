@@ -1,5 +1,6 @@
 <template>
   <div class="graph-view">
+    <StepNav :currentStep="2" :projectId="route.params.id" />
     <header class="topbar">
       <div class="topbar-left">
         <h1 class="project-name">{{ projectState.projectName || 'Knowledge Graph' }}</h1>
@@ -65,6 +66,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { getProject } from '../api/graph'
 import { useProject } from '../store/project'
 import GraphPanel from '../components/GraphPanel.vue'
+import StepNav from '../components/StepNav.vue'
 
 const route = useRoute()
 const router = useRouter()

@@ -191,6 +191,7 @@ async def get_simulation_status(
     actions = json.loads(sim.action_log_json) if sim.action_log_json else []
     return {
         "simulation_id": sim.id,
+        "project_id": sim.project_id,
         "status": sim.status,
         "current_round": config.get("num_rounds", 0),
         "total_rounds": config.get("num_rounds", 0),

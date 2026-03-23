@@ -124,21 +124,22 @@ async def get_report(
     session: AsyncSession = Depends(get_session),
 ):
     """Get a previously generated report."""
-    report_data = reports.get(sim_id)
-    if report_data:
-        return report_data
-
-    # Try loading from DB.
+    # Always load from DB to ensure project_id is present.
     sim = await session.get(Simulation, sim_id)
     if not sim:
         raise HTTPException(status_code=404, detail="Simulation not found")
 
-    if not sim.result_summary:
+    # Check in-memory cache first for report content.
+    cached = reports.get(sim_id)
+    report_text = (cached or {}).get("report") or sim.result_summary
+
+    if not report_text:
         raise HTTPException(status_code=404, detail="No report generated yet")
 
     report_data = {
         "simulation_id": sim_id,
-        "report": sim.result_summary,
+        "project_id": sim.project_id,
+        "report": report_text,
         "generated_at": str(sim.created_at),
     }
     reports[sim_id] = report_data

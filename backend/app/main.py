@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="MiroFish Mini",
+    title="Curica Mirror",
     description="Multi-Agent Simulation Engine",
     lifespan=lifespan,
 )
@@ -46,7 +46,7 @@ app.include_router(report_router, prefix="/api/report")
 
 @app.get("/")
 async def root():
-    return {"status": "ok", "name": "MiroFish Mini"}
+    return {"status": "ok", "name": "Curica Mirror"}
 
 
 @app.get("/api/health")

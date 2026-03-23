@@ -1,113 +1,143 @@
 <template>
   <div class="home">
-    <div class="hero">
-      <h1 class="title">MIROFISH</h1>
-      <span class="subtitle">Mini</span>
-      <p class="tagline">Multi-Agent Simulation Engine</p>
-    </div>
+    <!-- Top navbar -->
+    <header class="navbar">
+      <div class="navbar-brand">Curica Mirror</div>
+      <nav class="navbar-tabs">
+        <span class="navbar-tab navbar-tab--active">Simulations</span>
+      </nav>
+    </header>
 
-    <div class="upload-section">
-      <div
-        class="dropzone"
-        :class="{ 'dropzone--active': isDragging }"
-        @dragover.prevent="isDragging = true"
-        @dragleave.prevent="isDragging = false"
-        @drop.prevent="onDrop"
-        @click="openFilePicker"
-      >
-        <input
-          ref="fileInput"
-          type="file"
-          multiple
-          accept=".pdf,.txt,.md"
-          hidden
-          @change="onFileSelect"
-        />
-        <div class="dropzone-content">
+    <!-- Main content -->
+    <div class="main-layout">
+      <!-- Left panel: create -->
+      <div class="panel-create">
+        <div class="welcome-section">
+          <h1 class="welcome-title">Curica Mirror</h1>
+          <p class="welcome-sub">Multi-Agent Simulation Engine</p>
+        </div>
+
+        <!-- File upload -->
+        <div
+          class="dropzone"
+          :class="{ 'dropzone--active': isDragging }"
+          @dragover.prevent="isDragging = true"
+          @dragleave.prevent="isDragging = false"
+          @drop.prevent="onDrop"
+          @click="openFilePicker"
+        >
+          <input
+            ref="fileInput"
+            type="file"
+            multiple
+            accept=".pdf,.txt,.md"
+            hidden
+            @change="onFileSelect"
+          />
           <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M12 16V4m0 0L8 8m4-4l4 4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
           </svg>
-          <p class="dropzone-text">Drop files here or click to browse</p>
-          <p class="dropzone-hint">.pdf, .txt, .md accepted</p>
+          <span class="dropzone-text">Drop files or click to browse</span>
+          <span class="dropzone-hint">.pdf, .txt, .md</span>
+        </div>
+
+        <ul v-if="files.length" class="file-list">
+          <li v-for="(file, i) in files" :key="i" class="file-item">
+            <span class="file-name">{{ file.name }}</span>
+            <span class="file-size">{{ formatSize(file.size) }}</span>
+            <button class="file-remove" @click="removeFile(i)">&times;</button>
+          </li>
+        </ul>
+
+        <!-- Scenario input (chat-style) -->
+        <div class="scenario-input-wrapper">
+          <textarea
+            v-model="scenario"
+            class="scenario-input"
+            rows="3"
+            placeholder="Enter Simulation Scenario"
+            @keydown.ctrl.enter="startEngine"
+          ></textarea>
+          <button
+            class="btn-send"
+            :disabled="loading || (!files.length && !scenario.trim())"
+            @click="startEngine"
+            title="Start simulation"
+          >
+            <svg v-if="!loading" viewBox="0 0 24 24" fill="currentColor" class="send-icon">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+            <span v-else class="spinner"></span>
+          </button>
+        </div>
+
+        <div class="form-row">
+          <input
+            v-model="projectName"
+            class="input-project-name"
+            type="text"
+            placeholder="Project Name (optional)"
+          />
+        </div>
+
+        <p v-if="error" class="error">{{ error }}</p>
+        <p v-if="loading" class="loading-text">Uploading & extracting knowledge graph...</p>
+
+        <!-- Action buttons -->
+        <div class="action-buttons">
+          <button class="btn-action btn-action--primary" @click="focusScenario">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-action-icon"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+            New Sim
+          </button>
+          <button class="btn-action" @click="scrollToHistory">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-action-icon"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            History
+          </button>
         </div>
       </div>
 
-      <ul v-if="files.length" class="file-list">
-        <li v-for="(file, i) in files" :key="i" class="file-item">
-          <span class="file-name">{{ file.name }}</span>
-          <span class="file-size">{{ formatSize(file.size) }}</span>
-          <button class="file-remove" @click="removeFile(i)" title="Remove file">&times;</button>
-        </li>
-      </ul>
-
-      <div class="form-group">
-        <label class="label" for="scenario">Simulation Scenario</label>
-        <textarea
-          id="scenario"
-          v-model="scenario"
-          class="textarea"
-          rows="4"
-          placeholder="Describe what you want to simulate..."
-        ></textarea>
-      </div>
-
-      <div class="form-group">
-        <label class="label" for="projectName">Project Name <span class="optional">(optional)</span></label>
-        <input
-          id="projectName"
-          v-model="projectName"
-          class="input"
-          type="text"
-          placeholder="My Simulation"
-        />
-      </div>
-
-      <p v-if="error" class="error">{{ error }}</p>
-
-      <button
-        class="btn-start"
-        :disabled="loading || (!files.length && !scenario.trim())"
-        @click="startEngine"
-      >
-        <span v-if="loading" class="spinner"></span>
-        <span v-else>Start Engine</span>
-      </button>
-
-      <p v-if="loading" class="loading-text">Uploading &amp; extracting knowledge graph&hellip;</p>
-    </div>
-
-    <div v-if="history.length" class="history-section">
-      <div class="history-separator"></div>
-      <h2 class="history-heading">Previous Simulations</h2>
-      <div class="history-grid">
-        <div
-          v-for="project in history"
-          :key="project.project_id || project.id"
-          class="history-card"
-          @click="goToProject(project)"
-        >
-          <button
-            class="history-delete"
-            title="Delete project"
-            @click.stop="removeProject(project)"
-          >&times;</button>
-          <div class="history-card-name">{{ project.name || project.project_name || 'Untitled' }}</div>
-          <p class="history-card-scenario">{{ truncate(project.scenario, 100) }}</p>
-          <div class="history-card-meta">
-            <span v-if="project.entity_count != null" class="badge badge--accent">{{ project.entity_count }} entities</span>
-            <span class="badge badge--muted">{{ (project.simulations || []).length }} sim{{ (project.simulations || []).length === 1 ? '' : 's' }}</span>
-          </div>
-          <div v-if="(project.simulations || []).length" class="history-sims">
-            <div v-for="(sim, si) in project.simulations" :key="si" class="history-sim-row">
-              <span
-                class="badge"
-                :class="sim.status === 'completed' ? 'badge--success' : sim.status === 'failed' ? 'badge--error' : 'badge--muted'"
-              >{{ sim.status || 'unknown' }}</span>
-              <span class="history-sim-detail">{{ sim.action_count ?? 0 }} actions</span>
-              <span v-if="sim.has_report" class="badge badge--accent">report</span>
+      <!-- Right panel: activity feed -->
+      <div class="panel-feed" ref="feedPanel">
+        <h2 class="feed-title">Recent Activity Feed</h2>
+        <div v-if="!history.length" class="feed-empty">
+          <p>No simulations yet.</p>
+          <p>Create your first one!</p>
+        </div>
+        <div v-else class="feed-list">
+          <div
+            v-for="project in history"
+            :key="project.project_id || project.id"
+            class="feed-card"
+            @click="goToProject(project)"
+          >
+            <div class="feed-card-header">
+              <span class="feed-card-name">{{ project.name || 'Untitled' }}</span>
+              <button
+                class="feed-card-delete"
+                title="Delete"
+                @click.stop="removeProject(project)"
+              >&times;</button>
             </div>
+            <p class="feed-card-scenario">{{ truncate(project.scenario, 80) }}</p>
+            <div class="feed-card-meta">
+              <span class="meta-item">
+                <span class="meta-count">{{ project.entity_count || 0 }}</span> entities
+              </span>
+              <span class="meta-separator"></span>
+              <span class="meta-item">
+                <span class="meta-count">{{ (project.simulations || []).length }}</span> sim{{ (project.simulations || []).length === 1 ? '' : 's' }}
+              </span>
+            </div>
+            <div v-if="(project.simulations || []).length" class="feed-card-sims">
+              <div v-for="(sim, si) in project.simulations" :key="si" class="feed-sim-row">
+                <span class="feed-sim-bar" :class="sim.status === 'completed' ? 'bar--success' : 'bar--muted'"></span>
+                <span class="feed-sim-status" :class="sim.status === 'completed' ? 'text--success' : ''">{{ sim.status }}</span>
+                <span class="feed-sim-actions">{{ sim.action_count ?? 0 }} actions</span>
+                <span v-if="sim.has_report" class="feed-sim-report">report</span>
+              </div>
+            </div>
+            <div class="feed-card-date">{{ formatDate(project.created_at) }}</div>
           </div>
-          <div class="history-card-date">{{ formatDate(project.created_at) }}</div>
         </div>
       </div>
     </div>
@@ -115,7 +145,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { uploadDocuments, getHistory, deleteProject } from '../api/graph'
 import { useProject } from '../store/project'
@@ -131,6 +161,7 @@ const loading = ref(false)
 const error = ref('')
 const isDragging = ref(false)
 const history = ref([])
+const feedPanel = ref(null)
 
 function openFilePicker() {
   fileInput.value?.click()
@@ -166,7 +197,16 @@ function formatSize(bytes) {
   return (bytes / 1048576).toFixed(1) + ' MB'
 }
 
+function focusScenario() {
+  document.querySelector('.scenario-input')?.focus()
+}
+
+function scrollToHistory() {
+  feedPanel.value?.scrollIntoView({ behavior: 'smooth' })
+}
+
 async function startEngine() {
+  if (loading.value || (!files.value.length && !scenario.value.trim())) return
   error.value = ''
   loading.value = true
   try {
@@ -193,7 +233,7 @@ async function loadHistory() {
     const data = await getHistory()
     history.value = Array.isArray(data) ? data : data.projects || []
   } catch {
-    // silently ignore – history is non-critical
+    // silently ignore
   }
 }
 
@@ -212,9 +252,13 @@ function goToProject(project) {
   const pid = project.project_id || project.id
   const sims = project.simulations || []
   const withReport = sims.filter(s => s.has_report)
+  const withActions = sims.filter(s => s.action_count > 0)
   if (withReport.length) {
     const latest = withReport[withReport.length - 1]
-    router.push(`/report/${pid}/${latest.simulation_id || latest.id}`)
+    router.push(`/report/${latest.simulation_id || latest.id}`)
+  } else if (withActions.length) {
+    const latest = withActions[withActions.length - 1]
+    router.push(`/simulation/${latest.simulation_id || latest.id}`)
   } else {
     router.push(`/graph/${pid}`)
   }
@@ -240,58 +284,100 @@ onMounted(() => {
 <style scoped>
 .home {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 60px 24px 80px;
   background: var(--bg);
   color: var(--text);
   font-family: 'JetBrains Mono', monospace;
+  display: flex;
+  flex-direction: column;
 }
 
-.hero {
-  text-align: center;
-  margin-bottom: 48px;
+/* Navbar */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 28px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
 }
 
-.title {
-  font-size: 3.5rem;
+.navbar-brand {
+  font-size: 1rem;
   font-weight: 700;
-  letter-spacing: 0.15em;
   color: var(--text);
-  margin: 0;
-  line-height: 1.1;
+  letter-spacing: 0.03em;
 }
 
-.subtitle {
-  display: inline-block;
-  font-size: 1.4rem;
-  font-weight: 400;
-  color: var(--accent);
-  letter-spacing: 0.3em;
-  margin-top: 4px;
+.navbar-tabs {
+  display: flex;
+  gap: 24px;
 }
 
-.tagline {
-  margin-top: 16px;
-  font-size: 0.95rem;
+.navbar-tab {
+  font-size: 0.8rem;
   color: var(--text-muted);
-  letter-spacing: 0.05em;
+  cursor: pointer;
+  padding-bottom: 2px;
+  transition: color 0.2s;
 }
 
-.upload-section {
-  width: 100%;
-  max-width: 560px;
+.navbar-tab--active {
+  color: var(--text);
+  border-bottom: 2px solid var(--accent);
+}
+
+/* Main layout */
+.main-layout {
+  display: flex;
+  flex: 1;
+  gap: 0;
+  overflow: hidden;
+}
+
+.panel-create {
+  flex: 0 0 55%;
+  padding: 48px 40px 40px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
+.panel-feed {
+  flex: 0 0 45%;
+  padding: 48px 28px 40px;
+  overflow-y: auto;
+  border-left: 1px solid var(--border);
+  background: rgba(22, 27, 34, 0.5);
+}
+
+/* Welcome */
+.welcome-section {
+  margin-bottom: 8px;
+}
+
+.welcome-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.welcome-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 6px 0 0;
+}
+
+/* Dropzone */
 .dropzone {
-  border: 2px dashed var(--border);
+  border: 1.5px dashed var(--border);
   border-radius: 10px;
-  padding: 40px 24px;
-  text-align: center;
+  padding: 20px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
   background: var(--bg-secondary);
@@ -300,14 +386,14 @@ onMounted(() => {
 .dropzone:hover,
 .dropzone--active {
   border-color: var(--accent);
-  background: rgba(255, 107, 53, 0.05);
+  background: rgba(255, 107, 53, 0.04);
 }
 
 .dropzone-icon {
-  width: 40px;
-  height: 40px;
+  width: 28px;
+  height: 28px;
   color: var(--text-muted);
-  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .dropzone--active .dropzone-icon,
@@ -316,35 +402,35 @@ onMounted(() => {
 }
 
 .dropzone-text {
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   color: var(--text);
-  margin: 0 0 6px;
 }
 
 .dropzone-hint {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
-  margin: 0;
+  margin-left: auto;
 }
 
+/* File list */
 .file-list {
   list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .file-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 8px 12px;
-  font-size: 0.8rem;
+  padding: 6px 10px;
+  font-size: 0.75rem;
 }
 
 .file-name {
@@ -364,110 +450,143 @@ onMounted(() => {
   background: none;
   border: none;
   color: var(--error);
-  font-size: 1.1rem;
+  font-size: 1rem;
   cursor: pointer;
   padding: 0 4px;
   line-height: 1;
   font-family: inherit;
 }
 
-.file-remove:hover {
-  opacity: 0.7;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.label {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  letter-spacing: 0.03em;
-}
-
-.optional {
-  opacity: 0.6;
-}
-
-.textarea,
-.input {
+/* Scenario input */
+.scenario-input-wrapper {
+  position: relative;
   background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 10px 14px;
-  color: var(--text);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.85rem;
-  resize: vertical;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
   transition: border-color 0.2s;
 }
 
-.textarea:focus,
-.input:focus {
+.scenario-input-wrapper:focus-within {
+  border-color: var(--accent);
+}
+
+.scenario-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 14px 50px 14px 16px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  resize: none;
+  outline: none;
+  line-height: 1.5;
+}
+
+.scenario-input::placeholder {
+  color: var(--text-muted);
+}
+
+.btn-send {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.btn-send:hover:not(:disabled) {
+  opacity: 0.85;
+  transform: scale(1.05);
+}
+
+.btn-send:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.send-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Project name */
+.form-row {
+  display: flex;
+  gap: 8px;
+}
+
+.input-project-name {
+  flex: 1;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  transition: border-color 0.2s;
+}
+
+.input-project-name:focus {
   outline: none;
   border-color: var(--accent);
 }
 
-.btn-start {
-  padding: 14px 28px;
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s, opacity 0.2s;
+/* Action buttons */
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-action {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.btn-start:hover:not(:disabled) {
-  background: #e55a28;
-  transform: translateY(-1px);
-}
-
-.btn-start:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.btn-start:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.loading-text {
-  text-align: center;
-  font-size: 0.8rem;
+  gap: 6px;
+  padding: 8px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
   color: var(--text-muted);
-  margin: 0;
-  animation: pulse 1.5s ease-in-out infinite;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+.btn-action:hover {
+  border-color: var(--text-muted);
+  color: var(--text);
 }
 
+.btn-action--primary {
+  background: rgba(255, 107, 53, 0.12);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-action--primary:hover {
+  background: rgba(255, 107, 53, 0.2);
+  color: var(--accent);
+}
+
+.btn-action-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Error / loading */
 .error {
   background: rgba(248, 81, 73, 0.1);
   border: 1px solid var(--error);
@@ -478,146 +597,183 @@ onMounted(() => {
   margin: 0;
 }
 
-/* History section */
-.history-section {
-  width: 100%;
-  max-width: 720px;
-  margin-top: 48px;
-}
-
-.history-separator {
-  height: 1px;
-  background: var(--border);
-  margin-bottom: 24px;
-}
-
-.history-heading {
-  font-size: 1.1rem;
-  font-weight: 600;
+.loading-text {
+  text-align: center;
+  font-size: 0.78rem;
   color: var(--text-muted);
-  letter-spacing: 0.06em;
+  margin: 0;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Activity Feed */
+.feed-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
   margin: 0 0 20px;
+  letter-spacing: 0.02em;
 }
 
-.history-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+.feed-empty {
+  text-align: center;
+  padding: 40px 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
 }
 
-.history-card {
-  position: relative;
+.feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feed-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 10px;
+  padding: 14px 16px;
   cursor: pointer;
   transition: border-color 0.2s, transform 0.1s;
 }
 
-.history-card:hover {
+.feed-card:hover {
   border-color: var(--accent);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
-.history-delete {
-  position: absolute;
-  top: 8px;
-  right: 8px;
+.feed-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.feed-card-name {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+.feed-card-delete {
   background: none;
   border: none;
   color: var(--error);
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   line-height: 1;
   cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: inherit;
+  padding: 0 4px;
   opacity: 0;
   transition: opacity 0.15s;
+  font-family: inherit;
 }
 
-.history-card:hover .history-delete {
+.feed-card:hover .feed-card-delete {
   opacity: 1;
 }
 
-.history-delete:hover {
+.feed-card-delete:hover {
   background: rgba(248, 81, 73, 0.15);
+  border-radius: 4px;
 }
 
-.history-card-name {
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: var(--text);
-  margin-bottom: 6px;
-  padding-right: 24px;
-}
-
-.history-card-scenario {
-  font-size: 0.78rem;
+.feed-card-scenario {
+  font-size: 0.73rem;
   color: var(--text-muted);
   margin: 0 0 10px;
-  line-height: 1.45;
+  line-height: 1.4;
 }
 
-.history-card-meta {
+.feed-card-meta {
   display: flex;
+  align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
   margin-bottom: 8px;
-}
-
-.badge {
-  display: inline-block;
-  font-size: 0.7rem;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-}
-
-.badge--accent {
-  background: rgba(255, 107, 53, 0.15);
-  color: var(--accent);
-}
-
-.badge--muted {
-  background: rgba(255, 255, 255, 0.06);
+  font-size: 0.72rem;
   color: var(--text-muted);
 }
 
-.badge--success {
-  background: rgba(63, 185, 80, 0.15);
-  color: var(--success);
+.meta-count {
+  color: var(--accent);
+  font-weight: 700;
 }
 
-.badge--error {
-  background: rgba(248, 81, 73, 0.15);
-  color: var(--error);
+.meta-separator {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--border);
 }
 
-.history-sims {
+.feed-card-sims {
   display: flex;
   flex-direction: column;
   gap: 4px;
   margin-bottom: 8px;
 }
 
-.history-sim-row {
+.feed-sim-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.75rem;
-}
-
-.history-sim-detail {
-  color: var(--text-muted);
-}
-
-.history-card-date {
   font-size: 0.7rem;
+}
+
+.feed-sim-bar {
+  width: 24px;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.bar--success {
+  background: var(--success);
+}
+
+.bar--muted {
+  background: var(--border);
+}
+
+.feed-sim-status {
   color: var(--text-muted);
-  opacity: 0.7;
-  margin-top: 4px;
+}
+
+.text--success {
+  color: var(--success);
+}
+
+.feed-sim-actions {
+  color: var(--text-muted);
+}
+
+.feed-sim-report {
+  background: rgba(255, 107, 53, 0.15);
+  color: var(--accent);
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+.feed-card-date {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  opacity: 0.6;
 }
 </style>
