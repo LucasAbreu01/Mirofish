@@ -127,12 +127,13 @@ async function handleGenerateReport() {
 }
 
 .generate-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  background: rgba(28, 33, 40, 0.4);
+  border: 1px solid rgba(48, 54, 61, 0.6);
   border-radius: 12px;
-  padding: 40px;
+  padding: 48px 40px;
   text-align: center;
-  max-width: 400px;
+  max-width: 440px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 .generate-card h2 {
@@ -149,20 +150,23 @@ async function handleGenerateReport() {
 }
 
 .btn-primary {
-  padding: 12px 32px;
+  padding: 14px 32px;
   background: var(--accent);
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 15px;
   font-weight: 600;
-  font-family: inherit;
+  font-family: var(--font-sans);
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.2);
 }
 
 .btn-primary:hover {
-  opacity: 0.9;
+  background: #ff7b4d;
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+  transform: translateY(-1px);
 }
 
 .report-layout {
@@ -198,20 +202,26 @@ async function handleGenerateReport() {
 }
 
 /* Markdown rendered content styles */
+.markdown-body {
+  font-family: var(--font-sans);
+}
+
 .markdown-body :deep(h1) {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 26px;
+  font-weight: 800;
   color: var(--text);
-  margin: 24px 0 12px;
+  margin: 24px 0 16px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border);
+  letter-spacing: -0.02em;
 }
 
 .markdown-body :deep(h2) {
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 700;
   color: var(--text);
-  margin: 20px 0 10px;
+  margin: 24px 0 12px;
+  letter-spacing: -0.015em;
 }
 
 .markdown-body :deep(h3) {
@@ -222,10 +232,10 @@ async function handleGenerateReport() {
 }
 
 .markdown-body :deep(p) {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text);
   line-height: 1.7;
-  margin: 8px 0;
+  margin: 10px 0;
 }
 
 .markdown-body :deep(ul),
@@ -235,18 +245,18 @@ async function handleGenerateReport() {
 }
 
 .markdown-body :deep(li) {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text);
   line-height: 1.6;
-  margin: 4px 0;
+  margin: 6px 0;
 }
 
 .markdown-body :deep(blockquote) {
-  border-left: 3px solid var(--accent);
-  padding: 8px 16px;
-  margin: 12px 0;
-  background: var(--bg-secondary);
-  border-radius: 0 6px 6px 0;
+  border-left: 4px solid var(--accent);
+  padding: 12px 20px;
+  margin: 16px 0;
+  background: rgba(255, 107, 53, 0.05);
+  border-radius: 0 8px 8px 0;
 }
 
 .markdown-body :deep(blockquote p) {
@@ -263,11 +273,11 @@ async function handleGenerateReport() {
 }
 
 .markdown-body :deep(pre) {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin: 12px 0;
+  background: rgba(13, 17, 23, 0.8);
+  border: 1px solid rgba(48, 54, 61, 0.6);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 16px 0;
   overflow-x: auto;
 }
 
@@ -275,6 +285,8 @@ async function handleGenerateReport() {
   background: none;
   padding: 0;
   color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 14px;
 }
 
 .markdown-body :deep(strong) {

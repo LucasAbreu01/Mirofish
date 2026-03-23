@@ -127,7 +127,6 @@ onMounted(async () => {
   flex-direction: column;
   background: var(--bg);
   color: var(--text);
-  font-family: 'JetBrains Mono', monospace;
 }
 
 .topbar {
@@ -165,36 +164,38 @@ onMounted(async () => {
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   font-size: 0.75rem;
   color: var(--text-muted);
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  background: rgba(28, 33, 40, 0.5);
+  border: 1px solid rgba(48, 54, 61, 0.8);
   border-radius: 12px;
   padding: 4px 12px;
 }
 
 .badge-count {
-  color: var(--text);
-  font-weight: 600;
+  color: var(--accent);
+  font-weight: 700;
 }
 
 .btn-continue {
-  padding: 8px 18px;
+  padding: 10px 20px;
   background: var(--accent);
   color: #fff;
   border: none;
-  border-radius: 6px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.8rem;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
 }
 
 .btn-continue:hover {
-  background: #e55a28;
+  background: #ff7b4d;
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
 }
 
 .content {
@@ -249,10 +250,11 @@ onMounted(async () => {
 }
 
 .detail-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 24px;
+  background: rgba(28, 33, 40, 0.4);
+  border: 1px solid rgba(48, 54, 61, 0.6);
+  border-radius: 12px;
+  padding: 32px 28px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 .detail-name {
@@ -298,17 +300,19 @@ onMounted(async () => {
 
 .attr-item {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   font-size: 0.8rem;
-  padding: 6px 10px;
-  background: var(--bg-secondary);
-  border-radius: 4px;
+  padding: 8px 12px;
+  background: rgba(22, 27, 34, 0.5);
+  border: 1px solid rgba(48, 54, 61, 0.5);
+  border-radius: 6px;
+  font-family: var(--font-mono);
 }
 
 .attr-key {
   color: var(--text-muted);
   flex-shrink: 0;
-  min-width: 100px;
+  min-width: 110px;
 }
 
 .attr-value {

@@ -268,33 +268,56 @@ function startSimulation() {
 
 .slider-row input[type="range"] {
   flex: 1;
-  accent-color: var(--accent);
+  -webkit-appearance: none;
+  appearance: none;
   height: 6px;
+  background: rgba(48, 54, 61, 0.6);
+  border-radius: 3px;
+  outline: none;
+}
+
+.slider-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+  transition: box-shadow 0.2s;
+}
+
+.slider-row input[type="range"]::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 0 6px rgba(255, 107, 53, 0.2);
 }
 
 .slider-value {
   font-size: 16px;
   font-weight: 700;
   color: var(--accent);
-  min-width: 28px;
+  min-width: 32px;
   text-align: center;
+  font-family: var(--font-mono);
 }
 
 .form-group textarea {
   width: 100%;
-  background: var(--bg-card);
+  background: rgba(22, 27, 34, 0.6);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 12px;
+  border-radius: 10px;
+  padding: 14px 16px;
   color: var(--text);
   font-size: 14px;
-  font-family: inherit;
+  font-family: var(--font-sans);
   resize: vertical;
+  transition: all 0.25s ease;
 }
 
 .form-group textarea:focus {
   outline: none;
   border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 4px 12px rgba(255, 107, 53, 0.08);
 }
 
 .form-group textarea::placeholder {
@@ -316,20 +339,23 @@ function startSimulation() {
 
 .btn-primary {
   width: 100%;
-  padding: 12px;
+  padding: 14px;
   background: var(--accent);
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 15px;
   font-weight: 600;
-  font-family: inherit;
+  font-family: var(--font-sans);
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.2);
 }
 
 .btn-primary:hover:not(:disabled) {
-  opacity: 0.9;
+  background: #ff7b4d;
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+  transform: translateY(-1px);
 }
 
 .btn-primary:disabled {

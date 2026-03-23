@@ -248,17 +248,21 @@ function viewReport() {
 
 .status-connecting {
   background: rgba(139, 148, 158, 0.15);
+  border: 1px solid rgba(139, 148, 158, 0.3);
   color: var(--text-muted);
 }
 
 .status-running {
   background: rgba(255, 107, 53, 0.15);
+  border: 1px solid rgba(255, 107, 53, 0.4);
   color: var(--accent);
+  box-shadow: 0 0 12px rgba(255, 107, 53, 0.2);
   animation: pulse 2s infinite;
 }
 
 .status-completed {
   background: rgba(63, 185, 80, 0.15);
+  border: 1px solid rgba(63, 185, 80, 0.3);
   color: var(--success);
 }
 
@@ -306,10 +310,11 @@ function viewReport() {
 }
 
 .stat-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px;
+  background: rgba(28, 33, 40, 0.4);
+  border: 1px solid rgba(48, 54, 61, 0.6);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .stat-card h3 {
@@ -322,18 +327,20 @@ function viewReport() {
 }
 
 .progress-bar-container {
-  height: 8px;
-  background: var(--bg-secondary);
-  border-radius: 4px;
+  height: 10px;
+  background: rgba(22, 27, 34, 0.8);
+  border-radius: 5px;
   overflow: hidden;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
 }
 
 .progress-bar {
   height: 100%;
   background: var(--accent);
-  border-radius: 4px;
-  transition: width 0.3s ease;
+  border-radius: 5px;
+  transition: width 0.4s ease-out;
+  box-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
 }
 
 .progress-text {
@@ -341,13 +348,16 @@ function viewReport() {
   font-weight: 700;
   color: var(--text);
   text-align: center;
+  font-family: var(--font-mono);
 }
 
 .stat-number {
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 32px;
+  font-weight: 800;
   color: var(--accent);
   text-align: center;
+  font-family: var(--font-mono);
+  letter-spacing: -0.02em;
 }
 
 .agent-chips {
@@ -357,12 +367,13 @@ function viewReport() {
 }
 
 .agent-chip {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
+  background: rgba(28, 33, 40, 0.8);
+  border: 1px solid rgba(48, 54, 61, 0.8);
   color: var(--text);
-  font-size: 12px;
-  padding: 3px 8px;
-  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 8px;
 }
 
 .muted {
